@@ -1,20 +1,19 @@
 package com.example.steamserverdemo;
 
 import java.io.IOException;
-import java.sql.Time;
-import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
+import com.example.steamserverdemo.utils.DateUtils;
 import org.springframework.stereotype.Component;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 
 
-@ServerEndpoint(value = "/websocket/{sid}",encoders = {ApiObjectEncoder.class})
+@ServerEndpoint(value = "/websocket/{sid}",encoders = {ApiObjectEncoder.class, TagObjectEncoder.class})
 @Component
 public class WebSocketServer {
 
@@ -38,37 +37,40 @@ public class WebSocketServer {
         addOnlineCount();           //在线数加1
         log.info("有新窗口开始监听:"+sid+",当前在线人数为" + getOnlineCount());
         this.sid=sid;
-        GameObject gameObject1 = new GameObject("edge","just so so",2200,"blue");
-        GameObject gameObject2 = new GameObject("fire fox","good",900,"green");
-        GameObject gameObject3 = new GameObject("chrome","excellent",3800,"red");
-        GameObject gameObject4 = new GameObject("edge","just so so",1500,"blue");
-        GameObject gameObject5 = new GameObject("fire fox","good",1900,"green");
-        GameObject gameObject6 = new GameObject("chrome","excellent",2800,"red");
-        GameObject gameObject7 = new GameObject("edge","just so so",2600,"blue");
-        GameObject gameObject8 = new GameObject("fire fox","good",2200,"green");
-        GameObject gameObject9 = new GameObject("chrome","excellent",1800,"red");
-        ArrayList<GameObject> gameObjects1 = new ArrayList<>();
-        ArrayList<GameObject> gameObjects2 = new ArrayList<>();
-        ArrayList<GameObject> gameObjects3 = new ArrayList<>();
-        gameObjects1.add(gameObject1);
-        gameObjects1.add(gameObject2);
-        gameObjects1.add(gameObject3);
-        gameObjects2.add(gameObject4);
-        gameObjects2.add(gameObject5);
-        gameObjects2.add(gameObject6);
-        gameObjects3.add(gameObject7);
-        gameObjects3.add(gameObject8);
-        gameObjects3.add(gameObject9);
-        TimeFieldObject timeFieldObject1 = new TimeFieldObject("2017",gameObjects1);
-        TimeFieldObject timeFieldObject2 = new TimeFieldObject("2018",gameObjects2);
-        TimeFieldObject timeFieldObject3 = new TimeFieldObject("2019",gameObjects3);
-        ArrayList<TimeFieldObject> timeFieldObjects= new ArrayList<>();
-        timeFieldObjects.add(timeFieldObject1);
-        timeFieldObjects.add(timeFieldObject2);
-        timeFieldObjects.add(timeFieldObject3);
-        ApiReturnObject apiReturnObject = new ApiReturnObject(timeFieldObjects);
+//        GameObject gameObject1 = new GameObject("edge","just so so",2200,"blue");
+//        GameObject gameObject2 = new GameObject("fire fox","good",900,"green");
+//        GameObject gameObject3 = new GameObject("chrome","excellent",3800,"red");
+//        GameObject gameObject4 = new GameObject("edge","just so so",1500,"blue");
+//        GameObject gameObject5 = new GameObject("fire fox","good",1900,"green");
+//        GameObject gameObject6 = new GameObject("chrome","excellent",2800,"red");
+//        GameObject gameObject7 = new GameObject("edge","just so so",2600,"blue");
+//        GameObject gameObject8 = new GameObject("fire fox","good",2200,"green");
+//        GameObject gameObject9 = new GameObject("chrome","excellent",1800,"red");
+//        ArrayList<GameObject> gameObjects1 = new ArrayList<>();
+//        ArrayList<GameObject> gameObjects2 = new ArrayList<>();
+//        ArrayList<GameObject> gameObjects3 = new ArrayList<>();
+//        gameObjects1.add(gameObject1);
+//        gameObjects1.add(gameObject2);
+//        gameObjects1.add(gameObject3);
+//        gameObjects2.add(gameObject4);
+//        gameObjects2.add(gameObject5);
+//        gameObjects2.add(gameObject6);
+//        gameObjects3.add(gameObject7);
+//        gameObjects3.add(gameObject8);
+//        gameObjects3.add(gameObject9);
+//        TimeFieldObject timeFieldObject1 = new TimeFieldObject("2017",gameObjects1);
+//        TimeFieldObject timeFieldObject2 = new TimeFieldObject("2018",gameObjects2);
+//        TimeFieldObject timeFieldObject3 = new TimeFieldObject("2019",gameObjects3);
+//        ArrayList<TimeFieldObject> timeFieldObjects= new ArrayList<>();
+//        timeFieldObjects.add(timeFieldObject1);
+//        timeFieldObjects.add(timeFieldObject2);
+//        timeFieldObjects.add(timeFieldObject3);
+        MySQLProcess mySQLProcess = new MySQLProcess();
+        ApiReturnObject apiReturnObject = mySQLProcess.getTimeFieldData(DateUtils.getSteamDates());
+        TagReturnObject tagReturnObject = mySQLProcess.getTagData();
         try {
             sendData(apiReturnObject);
+            sendTagData(tagReturnObject);
         } catch (IOException | EncodeException e) {
             log.error("websocket IO异常"+e.getMessage());
         }
@@ -123,6 +125,10 @@ public class WebSocketServer {
      * 实现服务器主动推送
      */
     public void sendData(ApiReturnObject data) throws IOException, EncodeException {
+        this.session.getBasicRemote().sendObject(data);
+    }
+
+    public void sendTagData(TagReturnObject data) throws IOException, EncodeException {
         this.session.getBasicRemote().sendObject(data);
     }
 

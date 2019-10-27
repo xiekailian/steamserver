@@ -50,7 +50,7 @@ class MySQLProcess {
    */
   def getTagData(): TagReturnObject = {
 
-    val tableName = "tag"
+    val tableName = "(select * from tag order by number desc limit 100) as top10"
     val data: DataFrame = readMysqlTable(sqlContext, tableName)
 
     val tagObjects =new util.ArrayList[TagObject]
