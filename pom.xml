@@ -18,7 +18,7 @@
         <java.version>8</java.version>
         <scala.version>2.11.8</scala.version>
         <spark.version>2.4.0</spark.version>
-        <hadoop.version>2.6.0-cdh5.16.2</hadoop.version>
+        <hadoop.version>2.7.0</hadoop.version>
     </properties>
 
     <!--添加cloudera的repository-->
